@@ -13,6 +13,7 @@ module Data.Metrology.SI.Units.Attoparsec.Text
  , minuteP
  , hourP
  , dayP
+ , parseTime
  )where
 
 import Control.Applicative
@@ -117,6 +118,12 @@ dayP = 'd' >~ Day
 
 instance ParseUnit Day (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
   parseUnit g = parseUnit' g
+
+parseTime :: Parser Time
+parseTime =  parseUnit secondP
+         <|> parseUnit minuteP
+         <|> parseUnit hourP
+         <|> parseUnit dayP
 
 ampereP :: Parser Ampere
 ampereP = 'A' >~ Ampere
