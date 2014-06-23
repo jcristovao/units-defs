@@ -28,14 +28,18 @@ source-repository this
 library
   build-depends:      
       base >= 4.7 && < 5,
-      units >= 2.0 && < 3
+      units >= 2.0 && < 3,
+      attoparsec >= 0.11 && < 0.12
+
   exposed-modules:
     Data.Metrology.SI,
     Data.Metrology.SI.Mono,
     Data.Metrology.SI.Poly,
     Data.Metrology.SI.Prefixes,
+    Data.Metrology.SI.Prefixes.Attoparsec.Text,
     Data.Metrology.SI.MonoTypes, 
     Data.Metrology.SI.Units,
+    Data.Metrology.SI.Units.Attoparsec.Text,
     Data.Metrology.SI.Dims,
     Data.Metrology.SI.PolyTypes
 --    Data.Metrology.Imperial.Types
