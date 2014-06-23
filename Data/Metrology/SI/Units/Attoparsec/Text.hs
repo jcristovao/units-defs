@@ -1,19 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE TypeFamilies, DataKinds, DefaultSignatures, MultiParamTypeClasses,
              ConstraintKinds, UndecidableInstances, FlexibleContexts,
              FlexibleInstances, ScopedTypeVariables, TypeOperators, PolyKinds #-}
 
-{-# LANGUAGE StandaloneDeriving, GeneralizedNewtypeDeriving,
-             RoleAnnotations #-}
-{-# LANGUAGE AllowAmbiguousTypes #-}
-
 module Data.Metrology.SI.Units.Attoparsec.Text
  ( ParseUnit(..)
-
+ , gramP
+ , meterP
+ , metreP
+ , secondP
+ , minuteP
+ , hourP
+ , dayP
  )where
 
 import Control.Applicative
@@ -21,16 +20,10 @@ import Data.Attoparsec.Text hiding (Number)
 import Data.Metrology
 import Data.Metrology.SI
 import qualified Data.Metrology.SI.Dims as Dims
-import qualified Data.Metrology.SI.Prefixes.Attoparsec.Text as PAT
+import Data.Metrology.SI.Prefixes.Attoparsec.Text
 
 class ParseUnit g i where
   parseUnit :: Parser g -> Parser i
-
-instance ParseUnit Gram (Qu '[F Dims.Mass One] 'DefaultLCSU Double) where
-  parseUnit g = skipSpace >> double >>= parseUnit' g
-
-instance ParseUnit Second (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
-  parseUnit g = skipSpace >> double >>= parseUnit' g
 
 
 build :: ( Subset (CanonicalUnitsOfFactors (UnitFactorsOf unit)) (CanonicalUnitsOfFactors (LookupList (DimFactorsOf (DimOfUnit unit)) 'DefaultLCSU))
@@ -54,29 +47,30 @@ build v g p = (\u' -> v %% p u') <$> (skipSpace >> g)
             {-=> Parser unit-}
             {--> n-}
             {--> Parser (Qu (DimFactorsOf (DimOfUnit unit)) 'DefaultLCSU n)-}
-parseUnit' g v =
-      (skipSpace >> PAT.deca  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.hecto >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.kilo  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.mega  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.giga  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.tera  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.peta  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.exa   >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.zetta >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.yotta >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.deci  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.centi >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.milli >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.micro >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.nano  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.pico  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.femto >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.atto  >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.zepto >>= return . (:@) >>= build v g)
-  <|> (skipSpace >> PAT.yocto >>= return . (:@) >>= build v g)
+parseUnit' g = skipSpace >> double >>= (\v ->
+   (  (skipSpace >> decaP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> hectoP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> kiloP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> megaP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> gigaP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> teraP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> petaP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> exaP   >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> zettaP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> yottaP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> deciP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> centiP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> milliP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> microP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> nanoP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> picoP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> femtoP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> attoP  >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> zeptoP >>= return . (:@) >>= build v g)
+  <|> (skipSpace >> yoctoP >>= return . (:@) >>= build v g)
   -- No prefix
   <|> (skipSpace >> (\u' -> v %% u') <$> (skipSpace >> g))
+   ))
 
 
 -- | Since the parser code is highly repetitive, let save some characters
@@ -85,107 +79,125 @@ a >~  b = char a   >> return b
 {-(>>~):: Text -> b  -> Parser b-}
 a >>~ b = string a >> return b
 
-meter :: Parser Meter
-meter = 'm' >~ Meter
+meterP :: Parser Meter
+meterP = 'm' >~ Meter
 
-metre :: Parser Meter
-metre = meter
+metreP :: Parser Meter
+metreP = meterP
 
-gram :: Parser Gram
-gram = 'g' >~ Gram
+instance ParseUnit Meter (Qu '[F Dims.Length One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-second :: Parser Second
-second = 's' >~ Second
+gramP :: Parser Gram
+gramP = 'g' >~ Gram
 
-minute :: Parser Minute
-minute = "min" >>~ Minute
+instance ParseUnit Gram (Qu '[F Dims.Mass One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-hour :: Parser Hour
-hour = 'h' >~ Hour
+secondP :: Parser Second
+secondP = 's' >~ Second
 
-day :: Parser Day
-day = 'd' >~ Day
+instance ParseUnit Second (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-ampere :: Parser Ampere
-ampere = 'A' >~ Ampere
+minuteP :: Parser Minute
+minuteP = "min" >>~ Minute
 
-kelvin :: Parser Kelvin
-kelvin = 'k' >~ Kelvin
+instance ParseUnit Minute (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-mole :: Parser Mole
-mole = "mol" >>~ Mole
+hourP :: Parser Hour
+hourP = 'h' >~ Hour
 
-candela :: Parser Candela
-candela = "cd" >>~ Candela
+instance ParseUnit Hour (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-hertz :: Parser Hertz
-hertz = "Hz" >>~ Hertz
+dayP :: Parser Day
+dayP = 'd' >~ Day
 
-liter :: Parser Liter
-liter = 'l' >~ Liter
+instance ParseUnit Day (Qu '[F Dims.Time One] 'DefaultLCSU Double) where
+  parseUnit g = parseUnit' g
 
-litre :: Parser Liter
-litre = liter
+ampereP :: Parser Ampere
+ampereP = 'A' >~ Ampere
 
-newton :: Parser Newton
-newton = 'N' >~ Newton
+kelvinP :: Parser Kelvin
+kelvinP = 'k' >~ Kelvin
 
-pascal :: Parser Pascal
-pascal = "Pa" >>~ Pascal
+moleP :: Parser Mole
+moleP = "mol" >>~ Mole
 
-joule :: Parser Joule
-joule = 'J' >~ Joule
+candelaP :: Parser Candela
+candelaP = "cd" >>~ Candela
 
-watt :: Parser Watt
-watt = 'W' >~ Watt
+hertzP :: Parser Hertz
+hertzP = "Hz" >>~ Hertz
 
-coloumb :: Parser Coulomb
-coloumb = 'C' >~ Coulomb
+literP :: Parser Liter
+literP = 'l' >~ Liter
 
-volt :: Parser Volt
-volt = 'V' >~ Volt
+litreP :: Parser Liter
+litreP = literP
 
-farad :: Parser Farad
-farad = 'F' >~ Farad
+newtonP :: Parser Newton
+newtonP = 'N' >~ Newton
 
-ohm :: Parser Ohm
-ohm = 'Ω' >~ Ohm
+pascalP :: Parser Pascal
+pascalP = "Pa" >>~ Pascal
 
-siemens :: Parser Siemens
-siemens = 'S' >~ Siemens
+jouleP :: Parser Joule
+jouleP = 'J' >~ Joule
 
-weber :: Parser Weber
-weber = "Wb" >>~ Weber
+wattP :: Parser Watt
+wattP = 'W' >~ Watt
 
-tesla :: Parser Tesla
-tesla = 'T' >~ Tesla
+coloumbP :: Parser Coulomb
+coloumbP = 'C' >~ Coulomb
 
-henry :: Parser Henry
-henry = 'H' >~ Henry
+voltP :: Parser Volt
+voltP = 'V' >~ Volt
 
-lumen :: Parser Lumen
-lumen = "lm" >>~ Lumen
+faradP :: Parser Farad
+faradP = 'F' >~ Farad
 
-lux :: Parser Lux
-lux = "lx" >>~ Lux
+ohmP :: Parser Ohm
+ohmP = 'Ω' >~ Ohm
 
-becquerel :: Parser Becquerel
-becquerel = "Bq" >>~ Becquerel
+siemensP :: Parser Siemens
+siemensP = 'S' >~ Siemens
 
-gray :: Parser Gray
-gray = "Gy" >>~ Gray
+weberP :: Parser Weber
+weberP = "Wb" >>~ Weber
 
-sievert :: Parser Sievert
-sievert = "Sv" >>~ Sievert
+teslaP :: Parser Tesla
+teslaP = 'T' >~ Tesla
 
-katal :: Parser Katal
-katal = "kat" >>~ Katal
+henryP :: Parser Henry
+henryP = 'H' >~ Henry
 
-hectare :: Parser Hectare
-hectare = "ha" >>~ Hectare
+lumenP :: Parser Lumen
+lumenP = "lm" >>~ Lumen
 
-ton :: Parser Ton
-ton = 't' >~ Ton
+luxP :: Parser Lux
+luxP = "lx" >>~ Lux
 
-tonne :: Parser Ton
-tonne = ton
+becquerelP :: Parser Becquerel
+becquerelP = "Bq" >>~ Becquerel
+
+grayP :: Parser Gray
+grayP = "Gy" >>~ Gray
+
+sievertP :: Parser Sievert
+sievertP = "Sv" >>~ Sievert
+
+katalP :: Parser Katal
+katalP = "kat" >>~ Katal
+
+hectareP :: Parser Hectare
+hectareP = "ha" >>~ Hectare
+
+tonP :: Parser Ton
+tonP = 't' >~ Ton
+
+tonneP :: Parser Ton
+tonneP = tonP

@@ -1,26 +1,26 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 module Data.Metrology.SI.Prefixes.Attoparsec.Text
-  ( deca
-  , hecto
-  , kilo
-  , mega
-  , giga
-  , tera
-  , peta
-  , exa
-  , zetta
-  , yotta
-  , deci
-  , centi
-  , milli
-  , micro
-  , nano
-  , pico
-  , femto
-  , atto
-  , zepto
-  , yocto
+  ( decaP
+  , hectoP
+  , kiloP
+  , megaP
+  , gigaP
+  , teraP
+  , petaP
+  , exaP
+  , zettaP
+  , yottaP
+  , deciP
+  , centiP
+  , milliP
+  , microP
+  , nanoP
+  , picoP
+  , femtoP
+  , attoP
+  , zeptoP
+  , yoctoP
   ) where
 
 import Control.Applicative
@@ -54,65 +54,63 @@ import Data.Metrology.SI.Units
 a >~  b = char a   >> return b
 a >>~ b = string a >> return b
 
-deca :: Parser Deca
-deca = "da" >>~ Deca
+decaP :: Parser Deca
+decaP = "da" >>~ Deca
 
-hecto :: Parser Hecto
-hecto = 'h' >~ Hecto
+hectoP :: Parser Hecto
+hectoP = 'h' >~ Hecto
 
-kilo :: Parser Kilo
-kilo = 'k' >~ Kilo
+kiloP :: Parser Kilo
+kiloP = 'k' >~ Kilo
 
-mega :: Parser Mega
-mega = 'M' >~ Mega
+megaP :: Parser Mega
+megaP = 'M' >~ Mega
 
-giga :: Parser Giga
-giga = 'G' >~ Giga
+gigaP :: Parser Giga
+gigaP = 'G' >~ Giga
 
-tera :: Parser Tera
-tera = 'T' >~ Tera
+teraP :: Parser Tera
+teraP = 'T' >~ Tera
 
-peta :: Parser Peta
-peta = 'P' >~ Peta
+petaP :: Parser Peta
+petaP = 'P' >~ Peta
 
-exa :: Parser Exa
-exa = 'E' >~ Exa
+exaP :: Parser Exa
+exaP = 'E' >~ Exa
 
-zetta :: Parser Zetta
-zetta = 'Z' >~ Zetta
+zettaP :: Parser Zetta
+zettaP = 'Z' >~ Zetta
 
-yotta :: Parser Yotta
-yotta = 'Y' >~ Yotta
+yottaP :: Parser Yotta
+yottaP = 'Y' >~ Yotta
 
-deci :: Parser Deci
-deci = 'd' >~ Deci
+deciP :: Parser Deci
+deciP = 'd' >~ Deci
 
-centi :: Parser Centi
-centi = 'c' >~ Centi
+centiP :: Parser Centi
+centiP = 'c' >~ Centi
 
-milli :: Parser Milli
-milli = 'm' >~ Milli
+milliP :: Parser Milli
+milliP = 'm' >~ Milli
 
-micro :: Parser Micro
-micro = (char 'μ' <|> char 'u') >> return Micro
+microP :: Parser Micro
+microP = (char 'μ' <|> char 'u') >> return Micro
 
-nano :: Parser Nano
-nano = 'n' >~ Nano
+nanoP :: Parser Nano
+nanoP = 'n' >~ Nano
 
-pico :: Parser Pico
-pico = 'p' >~ Pico
+picoP :: Parser Pico
+picoP = 'p' >~ Pico
 
-femto :: Parser Femto
-femto = 'f' >~ Femto
+femtoP :: Parser Femto
+femtoP = 'f' >~ Femto
 
-atto :: Parser Atto
-atto = 'a' >~ Atto
+attoP :: Parser Atto
+attoP = 'a' >~ Atto
 
-zepto :: Parser Zepto
-zepto = 'z' >~ Zepto
+zeptoP :: Parser Zepto
+zeptoP = 'z' >~ Zepto
 
-yocto :: Parser Yocto
-yocto = 'y' >~ Yocto
+yoctoP :: Parser Yocto
+yoctoP = 'y' >~ Yocto
 
-{-pars :: UnitPrefix a => Parser a-}
-{-pars = yocto <|> zepto-}
